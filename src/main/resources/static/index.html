@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <title>HomeBuyer</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+        <link rel="stylesheet" href="styles.css" />
+        <style>
+            #home-list {
+                background-color: #f0f4f7;
+            }
+            .box {
+                padding: 50px;
+            }
+            .submit-button {
+                background-color: #f78f20;
+                border: none;
+            }
+        </style>
+        <script>
+            var house = {};
+
+            //DOMContentLoaded to render the form to the console
+            document.addEventListener("DOMContentLoaded", function(){
+
+                var homes = [];  //Takes array from BACK-END
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "http://localhost:8080/homebuyer/homes");
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState === 4){
+                        JSON.parse(xhr.responseText).forEach(element => {     //converts it OUT of JSON into an array
+                            homes.push(element);
+                            updateTable(element);
+                        });    
+                    }
+                }
+                xhr.send();
+
+            document.getElementById("new-home").addEventListener("submit", function(e){
+                e.preventDefault();
+                var add = document.getElementById("address").value;
+                var pri = document.getElementById("price").value;
+                house = { address: add, price: pri};
+                console.log(house);
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "http://localhost:8080/homebuyer/homes");
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState === 4){
+                    	updateTable(house);
+                        document.getElementById("address").value = null; //Updates the table to null values when loading
+                        document.getElementById("price").value = null;
+                    }
+                    
+                }
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.send(JSON.stringify(house));  //converts it INTO JSON via string
+                
+            });
+
+        });
+
+        var updateTable = function(home){
+            var row = document.createElement("TR");
+            var addressColumn = document.createElement("TD");
+            var priceColumn = document.createElement("TD");
+            addressColumn.innerText = home.address;
+            priceColumn.innerText = home.price;
+            row.appendChild(addressColumn);
+            row.appendChild(priceColumn);
+            document.getElementById("home-table").appendChild(row);
+        };
+
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div><h1>HomeBuyer App</h1></div>
+            <div class="row">
+                <div class="col-lg-6"> <!--in a 12 column grid, we are establishing 6 columns-->
+                    <h2>Add Home</h2>
+                    <form id="new-home" action="#">
+                        <div class="form-group"> <!--styling for the input boxes-->
+                            <label>Address</label>
+                            <input class="form-control" id="address" type="text" />
+                        </div>
+                        <div class="form-group">
+                            <label>Price</label>
+                            <input class= "form-control" id="price" type="number" />
+                        </div>
+                        <div>
+                            <input class="btn btn-primary submit-button" type="submit" value="Save" /> <!--The first btn creates it, the second btn-primary is for bootstrap, and the submit-button is for our own styling from the top of this code-->
+                        </div>
+                    </form>
+                </div>
+                <div id="home-list" class="col-lg-6"> <!--in a 12 column grid, these are the other 6 columns-->
+                    <h2>View All Homes</h2>
+                    <table class="table" id="home-table">
+                        <tr><th>Address</th><th>Price</th></tr>
+                        <tr><td>123 Brian St.</td> <td>120000</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
